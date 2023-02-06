@@ -11,12 +11,12 @@ const ChatRoom = () => {
         username:"",
         receiverName:"",
         connected:false,
-        message:""
+        text:""
     })
 
     const handleMessage = (event) => {
         const {value} = event.target;
-        setUserData({...userData, "message":value});
+        setUserData({...userData, "text":value});
     }
 
     const handleUsername = (event) => {
@@ -86,12 +86,12 @@ const ChatRoom = () => {
             let chatMessage = {
                 senderName:userData.username,
                 receiverName:"all",
-                message:userData.message,
+                text:userData.text,
                 status:"MESSAGE"
             };
             console.log(chatMessage);
             stompClient.send("/app/message", {}, JSON.stringify(chatMessage));
-            setUserData({...userData, "message":""});
+            setUserData({...userData, "text":""});
         }
     }
 
@@ -100,7 +100,7 @@ const ChatRoom = () => {
             let chatMessage = {
                 senderName:userData.username,
                 receiverName:tab,
-                message:userData.message,
+                text:userData.text,
                 status:"MESSAGE"
             };
             if (userData.username !== tab){
@@ -108,7 +108,7 @@ const ChatRoom = () => {
                 setPrivateChats(new Map(privateChats));
             }
             stompClient.send("/app/private-message", {}, JSON.stringify(chatMessage));
-            setUserData({...userData, "message":""});
+            setUserData({...userData, "text":""});
         }
     }
 
@@ -116,6 +116,7 @@ const ChatRoom = () => {
         <div className="container">
             {userData.connected?
             <div className="chat-box">
+
                 <div className="member-list">
                     <ul>
                         <li onClick={() => {setTab("CHATROOM")}} className={`member ${tab==="CHATROOM" && "active"}`}>
@@ -128,20 +129,24 @@ const ChatRoom = () => {
                         ))}
                     </ul>
                 </div>
+
                 {tab === "CHATROOM" && <div className="chat-content">
                     <ul className="chat-messages">
                     {publicChats.map((chat, index) => (
                         <li className="message" key={index}>
-                            {chat.senderName !== userData.username && <div className="avatar">{chat.senderName}</div>}
-                            <div className="message-data">{chat.message}</div>
-                            {chat.senderName === userData.username && <div className="avatar self">{chat.senderName}</div>}
+                            {chat.senderName === userData.username ?
+                                <div className="avatar self">{chat.senderName}</div> :
+                                <div className="avatar">{chat.senderName}</div>}
+                            <div className="message-data">{chat.text}</div>
                         </li>
                     ))}
                     </ul>
                     <div className="send-message">
                         <input type="text" className="input-message" placeholder="enter public message"
-                               name="message" value={userData.message} onChange={handleMessage}/>
-                        <button type="button" className="send-button" onClick={sendPublicMessage}>Send</button>
+                               name="message" value={userData.text} onChange={handleMessage}/>
+                        <button type="button" className="send-button" onClick={sendPublicMessage}>
+                            Send
+                        </button>
                     </div>
                 </div>}
 
@@ -149,16 +154,18 @@ const ChatRoom = () => {
                     <ul className="chat-messages">
                     {[...privateChats.get(tab)].map((chat, index) => (
                         <li className="message" key={index}>
-                            {chat.senderName !== userData.username && <div className="avatar">{chat.senderName}</div>}
-                            <div className="message-data">{chat.message}</div>
+                            {chat.senderName !== userData.username && <div className="avatar">{chat.receiverName}</div>}
+                            <div className="message-data">{chat.text}</div>
                             {chat.senderName === userData.username && <div className="avatar self">{chat.senderName}</div>}
                         </li>
                     ))}
                     </ul>
                     <div className="send-message">
                         <input type="text" className="input-message" placeholder={`enter private message for ${tab}`}
-                               name="message" value={userData.message} onChange={handleMessage}/>
-                        <button type="button" className="send-button" onClick={sendPrivateMessage}>Send</button>
+                               name="message" value={userData.text} onChange={handleMessage}/>
+                        <button type="button" className="send-button" onClick={sendPrivateMessage}>
+                            Send
+                        </button>
                     </div>
                 </div>}
             </div>
